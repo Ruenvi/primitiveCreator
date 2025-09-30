@@ -2,6 +2,9 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from shiboken6 import wrapInstance
 import maya.OpenMayaUI as omui
 import os
+from . import primitiveCreatorUtil as pmutil
+import importlib
+importlib.reload(pmutil)
 
 ICON_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), 'icons'))
 
@@ -34,8 +37,10 @@ class PrimitiveCreatorDialog(QtWidgets.QDialog):
 
 		self.button_Layout = QtWidgets.QHBoxLayout()
 		self.main_Layout.addLayout(self.button_Layout)
-		self.create_button = QtWidgets.QPushButton('Create')
-		self.cancel_button = QtWidgets.QPushButton('Cancel')
+		self.create_button = QtWidgets.QPushButton('😠 Create')
+		self.create_button.clicked.connect(self.onClickCreatePrimitive)
+		self.cancel_button = QtWidgets.QPushButton('😡 Cancel')
+		self.cancel_button.clicked.connect(self.close)
 		self.button_Layout.addStretch()
 		self.button_Layout.addWidget(self.create_button)
 		self.button_Layout.addWidget(self.cancel_button)
@@ -49,13 +54,18 @@ class PrimitiveCreatorDialog(QtWidgets.QDialog):
 			item.setIcon(QtGui.QIcon(os.path.join(ICON_PATH, f'{prim}.png')))
 			self.primitive_listWidget.addItem(item)
 
+	def onClickCreatePrimitive(self):
+		slItem = self.primitive_listWidget.currentItem()
+		name = self.name_LineEdit.text()
+		pmutil.createPrimitive(slItem, name)
+
 def run():
 	global ui
-
 	try:
 		ui.close()
 	except:
 		pass
+
 	ptr = wrapInstance(int(omui.MQtUtil.mainWindow()), QtWidgets.QWidget)
 	ui = PrimitiveCreatorDialog(parent=ptr)
 	ui.show()
